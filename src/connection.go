@@ -12,7 +12,7 @@ import (
 )
 
 type connection struct {
-	send chan []byte
+	send chan Message
 	h    *hub
 }
 
@@ -27,10 +27,9 @@ func (c *connection) reader(wg *sync.WaitGroup, wsConn *websocket.Conn) {
 		if err != nil {
 			break
 		}
-		// var msgStruct message
 		var message Message
 		err = json.Unmarshal(msg, &message)
-		c.h.broadcast <- []byte(message.ChatMessage)
+		c.h.broadcast <- message
 	}
 }
 
@@ -39,13 +38,8 @@ func (c *connection) writer(wg *sync.WaitGroup, wsConn *websocket.Conn) {
 	for msg := range c.send {
 		tmpl := template.Must(template.ParseFiles("resources/views/response.html"))
 		buffer := new(bytes.Buffer)
-		message := Message{ChatMessage: string(msg)}
-		tmpl.Execute(buffer, message)
+		tmpl.Execute(buffer, msg)
 		err := wsConn.WriteMessage(websocket.TextMessage, buffer.Bytes())
-		if err != nil {
-			break
-		}
-		err = wsConn.WriteMessage(websocket.TextMessage, msg)
 		if err != nil {
 			break
 		}
@@ -64,7 +58,7 @@ func (wsh wsHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		log.Println(err)
 		return
 	}
-	c := &connection{send: make(chan []byte, 256), h: wsh.h}
+	c := &connection{send: make(chan Message, 256), h: wsh.h}
 	c.h.addConnection(c)
 	defer c.h.removeConnection(c)
 	var wg sync.WaitGroup

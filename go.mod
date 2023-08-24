@@ -1,4 +1,4 @@
-module example.com/m/v2
+module github.com/PhilipBatten/go-htmx-websockets
 
 go 1.18
 

@@ -9,7 +9,7 @@ import (
 type hub struct {
 	connectionsMx sync.RWMutex
 	connections   map[*connection]struct{}
-	broadcast     chan []byte
+	broadcast     chan Message
 	logMx         sync.RWMutex
 	log           [][]byte
 }
@@ -17,7 +17,7 @@ type hub struct {
 func newHub() *hub {
 	h := &hub{
 		connectionsMx: sync.RWMutex{},
-		broadcast:     make(chan []byte),
+		broadcast:     make(chan Message),
 		connections:   make(map[*connection]struct{}),
 	}
 

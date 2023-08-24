@@ -2,23 +2,17 @@ package main
 
 import (
 	"flag"
-	"html/template"
 	"log"
 	"net/http"
-)
 
-func HomeHandler() http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		tpl := template.Must(template.ParseFiles("resources/views/index.html"))
-		tpl.Execute(w, r)
-	})
-}
+	handlers "github.com/PhilipBatten/go-htmx-websockets/src/handlers"
+)
 
 func main() {
 	flag.Parse()
 	h := newHub()
 	router := http.NewServeMux()
-	router.Handle("/", HomeHandler())
+	router.HandleFunc("/", handlers.HomeHandler)
 	router.Handle("/ws", wsHandler{h: h})
 	log.Fatal(http.ListenAndServe(":3000", router))
 }

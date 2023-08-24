@@ -17,7 +17,8 @@ type connection struct {
 }
 
 type Message struct {
-	ChatMessage string `json:"chat_message"`
+	FromConnection string
+	ChatMessage    string `json:"chat_message"`
 }
 
 func (c *connection) reader(wg *sync.WaitGroup, wsConn *websocket.Conn) {
@@ -29,6 +30,8 @@ func (c *connection) reader(wg *sync.WaitGroup, wsConn *websocket.Conn) {
 		}
 		var message Message
 		err = json.Unmarshal(msg, &message)
+		message.FromConnection = wsConn.RemoteAddr().String()
+		log.Printf("received message from %v: %v", message.FromConnection, message.ChatMessage)
 		c.h.broadcast <- message
 	}
 }
